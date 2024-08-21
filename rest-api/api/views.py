@@ -1,8 +1,9 @@
+
 from django.http import JsonResponse
 from .models import User
 from .serializers import UserSerializer
 from rest_framework.decorators import api_view
-
+from rest_framework import status
 
 from .jwt_token_serializer import JwtTokenSerializer
 
@@ -44,9 +45,9 @@ def sign_in(request):
         response_data = {
             'tokens': tokens
         }
-        return JsonResponse(response_data, status=200)
+        return JsonResponse(response_data, status=status.HTTP_200_OK)
     else:
-        return JsonResponse({"error": "Invalid credentials"}, status=401)
+        return JsonResponse({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @api_view(['POST'])
@@ -62,7 +63,7 @@ def sign_up(request):
     else:
         return JsonResponse({
             "message": "Sign up failed"
-        })
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -73,3 +74,17 @@ def list_users(request):
     return JsonResponse({
         'users': serializer.data
     })
+
+
+@api_view(['POST'])
+def add_user(request):
+
+    user_data = request.data
+
+    serializer = UserSerializer(data=user_data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
