@@ -7,6 +7,17 @@ from rest_framework.decorators import api_view
 from .jwt_token_serializer import JwtTokenSerializer
 
 
+def authenticate(username=None, password=None):
+    try:
+        user = User.objects.get(username=username)
+        if user.password == password:
+            return user
+        else:
+            return None
+    except User.DoesNotExist:
+        return None
+
+
 def get_tokens_for_user(user):
     refresh = JwtTokenSerializer.get_token(user)
     return {
@@ -19,6 +30,23 @@ def api_home(request, *args, **kwargs):
     return JsonResponse({
         "message": "Hi there, this is Django API response!!"
     })
+
+
+@api_view(['POST'])
+def sign_in(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        tokens = get_tokens_for_user(user)
+        response_data = {
+            'tokens': tokens
+        }
+        return JsonResponse(response_data, status=200)
+    else:
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
 
 
 @api_view(['POST'])
