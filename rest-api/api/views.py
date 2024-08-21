@@ -88,3 +88,33 @@ def add_user(request):
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def update_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+
+    serializer = UserSerializer(user, data=data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+
+    return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    user.delete()
+
+    return JsonResponse({'message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
