@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from .models import User
 from .serializers import UserSerializer
 from rest_framework.decorators import api_view
 
@@ -34,3 +35,13 @@ def sign_up(request):
         return JsonResponse({
             "message": "Sign up failed"
         })
+
+
+@api_view(['GET'])
+def list_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+
+    return JsonResponse({
+        'users': serializer.data
+    })
